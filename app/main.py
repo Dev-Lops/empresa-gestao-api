@@ -10,6 +10,7 @@ from app.api.v1 import companies as companies_router
 from app.api.v1 import teams as teams_router
 from app.api.v1 import projects as projects_router
 from app.api.v1 import activities as activities_router
+from app.api.v1 import dashboard as dashboard_router
 
 
 @asynccontextmanager
@@ -64,6 +65,10 @@ app.include_router(
     prefix=settings.API_V1_STR
 )
 
+app.include_router(
+    dashboard_router.router, 
+    prefix=settings.API_V1_STR
+)
 
 @app.get("/health", tags=["health"])
 async def health_check():
