@@ -7,6 +7,10 @@ from app.core.config import settings
 
 from app.api.v1 import auth as auth_router
 from app.api.v1 import companies as companies_router
+from app.api.v1 import teams as teams_router
+from app.api.v1 import projects as projects_router
+
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -42,6 +46,16 @@ app.include_router(
 
 app.include_router(
     companies_router.router, 
+    prefix=settings.API_V1_STR
+)
+
+app.include_router(
+    teams_router.router, 
+    prefix=settings.API_V1_STR
+)
+
+app.include_router(
+    projects_router.router, 
     prefix=settings.API_V1_STR
 )
 
