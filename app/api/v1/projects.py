@@ -3,7 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.deps import get_current_user
+from app.api.v1.deps import get_current_user, require_manager
 from app.core.database import get_db
 from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate
 from app.schemas.user import UserResponse
@@ -36,10 +36,11 @@ async def get_project(
 async def create_project(
     data: ProjectCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_user),
+    current_user: UserResponse = Depends(require_manager),
 ):
+    """ADMIN e MANAGER podem criar projetos."""
     service = ProjectService(db)
-    return await service.create(data)
+    return await service.create(data, current_user)
 
 
 @router.patch("/{project_id}", response_model=ProjectResponse)
@@ -47,17 +48,19 @@ async def update_project(
     project_id: uuid.UUID,
     data: ProjectUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_user),
+    current_user: UserResponse = Depends(require_manager),
 ):
+    """ADMIN e MANAGER podem atualizar projetos."""
     service = ProjectService(db)
-    return await service.update(project_id, data)
+    return await service.update(project_id, data, current_user)
 
 
 @router.delete("/{project_id}", status_code=204)
 async def delete_project(
     project_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_user),
+    current_user: UserResponse = Depends(require_manager),
 ):
+    """ADMIN e MANAGER podem deletar projetos."""
     service = ProjectService(db)
-    await service.delete(project_id)
+    await service.delete(project_id, current_user)

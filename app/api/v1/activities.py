@@ -3,7 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.deps import get_current_user
+from app.api.v1.deps import get_current_user, require_manager
 from app.core.database import get_db
 from app.schemas.activity import ActivityCreate, ActivityResponse, ActivityUpdate
 from app.schemas.user import UserResponse
@@ -36,10 +36,11 @@ async def get_activity(
 async def create_activity(
     data: ActivityCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_user),
+    current_user: UserResponse = Depends(require_manager),
 ):
+    """ADMIN e MANAGER podem criar atividades."""
     service = ActivityService(db)
-    return await service.create(data)
+    return await service.create(data, current_user)
 
 
 @router.patch("/{activity_id}", response_model=ActivityResponse)
@@ -49,15 +50,17 @@ async def update_activity(
     db: AsyncSession = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ):
+    """Qualquer usuário pode atualizar atividades — service valida regras."""
     service = ActivityService(db)
-    return await service.update(activity_id, data)
+    return await service.update(activity_id, data, current_user)
 
 
 @router.delete("/{activity_id}", status_code=204)
 async def delete_activity(
     activity_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_user),
+    current_user: UserResponse = Depends(require_manager),
 ):
+    """ADMIN e MANAGER podem deletar atividades."""
     service = ActivityService(db)
-    await service.delete(activity_id)
+    await service.delete(activity_id, current_user)

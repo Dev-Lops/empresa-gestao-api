@@ -3,7 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.deps import get_current_user
+from app.api.v1.deps import get_current_user, require_admin
 from app.core.database import get_db
 from app.schemas.company import CompanyCreate, CompanyResponse, CompanyUpdate
 from app.schemas.user import UserResponse
@@ -17,7 +17,7 @@ async def list_companies(
     db: AsyncSession = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ):
-    """Lista todas as empresas."""
+    """Qualquer usuário autenticado pode listar empresas."""
     service = CompanyService(db)
     return await service.get_all()
 
@@ -28,7 +28,7 @@ async def get_company(
     db: AsyncSession = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ):
-    """Busca uma empresa pelo ID."""
+    """Qualquer usuário autenticado pode ver uma empresa."""
     service = CompanyService(db)
     return await service.get_by_id(company_id)
 
@@ -37,9 +37,9 @@ async def get_company(
 async def create_company(
     data: CompanyCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_user),
+    current_user: UserResponse = Depends(require_admin),
 ):
-    """Cria uma nova empresa."""
+    """Apenas ADMIN pode criar empresas."""
     service = CompanyService(db)
     return await service.create(data)
 
@@ -49,9 +49,9 @@ async def update_company(
     company_id: uuid.UUID,
     data: CompanyUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_user),
+    current_user: UserResponse = Depends(require_admin),
 ):
-    """Atualiza parcialmente uma empresa."""
+    """Apenas ADMIN pode atualizar empresas."""
     service = CompanyService(db)
     return await service.update(company_id, data)
 
@@ -60,8 +60,8 @@ async def update_company(
 async def delete_company(
     company_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_user),
+    current_user: UserResponse = Depends(require_admin),
 ):
-    """Remove uma empresa."""
+    """Apenas ADMIN pode deletar empresas."""
     service = CompanyService(db)
     await service.delete(company_id)
