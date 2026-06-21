@@ -8,6 +8,15 @@ from sqlalchemy import pool
 from app.core.config import settings
 from app.core.database import Base
 
+# Importa todos os models para o Alembic detectar as tabelas
+from app.models import (  # noqa: F401
+    Activity,
+    Company,
+    Project,
+    Team,
+    User,
+)
+
 config = context.config
 
 if config.config_file_name is not None:
